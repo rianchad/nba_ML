@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(python -c \"import config; import fetch_player_pbp; import player_advanced_features; import lineup_advanced_features; print\\('All modules import OK'\\)\")",
+      "PowerShell(pip install pyarrow)"
+    ]
+  }
+}
