@@ -56,15 +56,23 @@ def _extract_ref_names(bs) -> list[str]:
     Extract official names from a BoxScoreSummaryV3 response.
     V3: officials at index 3, columns: firstName, familyName.
     Falls back to V2 column names (FIRST_NAME, LAST_NAME) if needed.
+    Returns [] for unplayed/unavailable games.
     """
     try:
-        officials = bs.get_data_frames()[3]
-        if 'firstName' in officials.columns and 'familyName' in officials.columns:
-            return (officials['firstName'].str.strip() + ' ' +
-                    officials['familyName'].str.strip()).tolist()
-        if 'FIRST_NAME' in officials.columns and 'LAST_NAME' in officials.columns:
-            return (officials['FIRST_NAME'].str.strip() + ' ' +
-                    officials['LAST_NAME'].str.strip()).tolist()
+        frames = bs.get_data_frames()
+        # V3: officials at index 3; guard against short frame list or None
+        for idx in [3, 2]:
+            if idx >= len(frames):
+                continue
+            officials = frames[idx]
+            if officials is None or not isinstance(officials, pd.DataFrame) or officials.empty:
+                continue
+            if 'firstName' in officials.columns and 'familyName' in officials.columns:
+                return (officials['firstName'].astype(str).str.strip() + ' ' +
+                        officials['familyName'].astype(str).str.strip()).tolist()
+            if 'FIRST_NAME' in officials.columns and 'LAST_NAME' in officials.columns:
+                return (officials['FIRST_NAME'].astype(str).str.strip() + ' ' +
+                        officials['LAST_NAME'].astype(str).str.strip()).tolist()
     except Exception:
         pass
     return []

@@ -185,12 +185,16 @@ def _crew_stats(ref_map: pd.DataFrame, ref_career: pd.DataFrame) -> pd.DataFrame
                 fl.append(r['ref_fouls'])
                 ps.append(r['ref_poss'])
                 bs.append(r['ref_bias'])
+        def _safe_mean(lst):
+            vals = [v for v in lst if v is not None and not (isinstance(v, float) and np.isnan(v))]
+            return float(np.mean(vals)) if vals else np.nan
+
         rows.append({
             'GAME_ID':            gid,
-            'ref_home_win_pct':   np.nanmean(hw) if hw else np.nan,
-            'ref_foul_rate':      np.nanmean(fl) if fl else np.nan,
-            'ref_pace_effect':    np.nanmean(ps) if ps else np.nan,
-            'ref_home_foul_bias': np.nanmean(bs) if bs else np.nan,
+            'ref_home_win_pct':   _safe_mean(hw),
+            'ref_foul_rate':      _safe_mean(fl),
+            'ref_pace_effect':    _safe_mean(ps),
+            'ref_home_foul_bias': _safe_mean(bs),
         })
     return pd.DataFrame(rows)
 

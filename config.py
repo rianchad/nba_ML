@@ -8,7 +8,7 @@ SEASONS = [
     # '2019-20' excluded — bubble season distorts home court
     '2020-21', '2021-22', '2022-23', '2023-24', '2024-25', '2025-26',
 ]
-TEST_SEASON = '2024-25'        # completed season -> reliable accuracy
+TEST_SEASON = '2023-24'        # completed season -> reliable accuracy
 
 # ── Rolling windows ────────────────────────────────────
 ROLLING_SHORT = 5
