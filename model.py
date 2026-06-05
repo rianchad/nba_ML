@@ -2,7 +2,6 @@
 model.py — train the calibrated gradient-boosting classifier.
 """
 
-import numpy as np
 import pandas as pd
 from rich.console import Console
 from rich.panel import Panel
@@ -54,9 +53,32 @@ def train_model(matchups):
     y_proba = model.predict_proba(X_test)[:, 1]
     acc = accuracy_score(y_test, y_pred)
 
-    console.print(Panel(f"[bold cyan]Test Accuracy ({C.TEST_SEASON}): {acc:.1%}",
-                        border_style="cyan", padding=(1, 2)))
+    naive_acc = max(y_test.mean(), 1 - y_test.mean())
+    console.print(Panel(
+        f"[bold cyan]Test Accuracy ({C.TEST_SEASON}): {acc:.1%}\n"
+        f"[white]Naive baseline (always pick home): {naive_acc:.1%}\n"
+        f"[{'green' if acc-naive_acc > 0.08 else 'yellow'}]Lift over naive: {acc-naive_acc:+.1%}",
+        border_style="cyan", padding=(1, 2)))
     print(classification_report(y_test, y_pred, target_names=['Away Win', 'Home Win']))
+
+    # Accuracy by confidence band
+    eval_df = pd.DataFrame({'prob': y_proba, 'actual': y_test.values})
+    eval_df['margin'] = (eval_df['prob'] - 0.5).abs()
+    eval_df['correct'] = (eval_df['prob'] > 0.5) == eval_df['actual'].astype(bool)
+    bands = [
+        ('Close   (<10% from 50/50)', eval_df['margin'] < 0.10),
+        ('Medium  (10–20%)',          eval_df['margin'].between(0.10, 0.20)),
+        ('Confident (>20%)',          eval_df['margin'] > 0.20),
+    ]
+    console.print("  [bold cyan]Accuracy by model confidence:")
+    for label, mask in bands:
+        sub = eval_df[mask]
+        if len(sub) == 0:
+            continue
+        pct = sub['correct'].mean()
+        bar = '█' * int(pct * 30) + '░' * (30 - int(pct * 30))
+        color = 'green' if pct > 0.72 else 'yellow' if pct > 0.60 else 'red'
+        console.print(f"    {label}: [{color}]{bar} {pct:.1%}[/] ({len(sub)} games)")
 
     base_fit = XGBClassifier(
         n_estimators=400, max_depth=4, learning_rate=0.03,

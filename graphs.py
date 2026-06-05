@@ -174,6 +174,52 @@ def feature_correlation(matchups, res):
     _save(fig, 'g13_feature_correlation')
 
 
+def confidence_breakdown(res):
+    """Accuracy and game count split by how far the model's prediction was from 50/50."""
+    y_proba = np.array(res['y_proba'])
+    y_test  = np.array(res['y_test'])
+    margin  = np.abs(y_proba - 0.5)
+    correct = (y_proba > 0.5) == y_test.astype(bool)
+
+    edges  = [0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.50]
+    labels, accs, counts = [], [], []
+    for lo, hi in zip(edges, edges[1:]):
+        mask = (margin >= lo) & (margin < hi)
+        if mask.sum() < 5:
+            continue
+        labels.append(f'{50+lo*100:.0f}–{50+hi*100:.0f}%')
+        accs.append(correct[mask].mean())
+        counts.append(mask.sum())
+
+    if not labels:
+        return
+
+    fig, ax1 = plt.subplots(figsize=(10, 5))
+    x = np.arange(len(labels))
+    ax1.bar(x, accs, color=C.BLUE, alpha=0.8, edgecolor='none', zorder=2)
+    ax1.axhline(0.5, color='white', ls=':', alpha=0.3, zorder=1)
+    ax1.axhline(np.mean(correct), color=C.YELLOW, ls='--', lw=1.5,
+                label=f'Overall {np.mean(correct):.1%}', zorder=3)
+    ax1.set_ylim(0.4, 1.0)
+    ax1.set_ylabel('Accuracy')
+    ax1.set_xticks(x)
+    ax1.set_xticklabels([f'Model says\n{l}' for l in labels], fontsize=8)
+    ax1.set_title(
+        f'Accuracy by Model Confidence [{C.TEST_SEASON}]\n'
+        'Left = model thinks it\'s a coin flip; right = model is confident',
+        pad=12)
+
+    ax2 = ax1.twinx()
+    ax2.plot(x, counts, color=C.ORANGE, marker='o', lw=2, ms=6, label='# games')
+    ax2.set_ylabel('Games in band', color=C.ORANGE)
+    ax2.tick_params(axis='y', colors=C.ORANGE)
+
+    lines1, lbls1 = ax1.get_legend_handles_labels()
+    lines2, lbls2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, lbls1 + lbls2, loc='lower right')
+    _save(fig, 'g14_confidence_breakdown')
+
+
 def generate_all(res, matchups):
     console.print("\n[bold cyan]Generating graphs...")
     calibration(res)
@@ -189,4 +235,5 @@ def generate_all(res, matchups):
     quarter_analysis(matchups)
     rolling_accuracy(res)
     feature_correlation(matchups, res)
+    confidence_breakdown(res)
     console.print("[green]  Graphs saved.\n")

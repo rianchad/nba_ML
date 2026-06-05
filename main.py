@@ -151,7 +151,7 @@ def main():
                 P.predict_with_lineups(h, hn, a, an, featured, player_rolling, art, playoffs=playoffs)
         except KeyboardInterrupt:
             console.print("\n[cyan]Done."); break
-
+    
 
 if __name__ == '__main__':
     main()

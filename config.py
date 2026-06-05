@@ -6,9 +6,9 @@ config.py — all shared configuration, constants, and reference data.
 SEASONS = [
     '2015-16', '2016-17', '2017-18', '2018-19',
     # '2019-20' excluded — bubble season distorts home court
-    '2020-21', '2021-22', '2022-23', '2023-24', '2024-25', '2025-26',
+    '2020-21', '2021-22', '2022-23', '2023-24', '2024-25',
 ]
-TEST_SEASON = '2023-24'        # completed season -> reliable accuracy
+TEST_SEASON = '2025-26'        # completed season -> reliable accuracy
 
 # ── Rolling windows ────────────────────────────────────
 ROLLING_SHORT = 5
