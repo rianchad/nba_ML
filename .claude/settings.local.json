@@ -3,7 +3,19 @@
     "allow": [
       "Bash(python -c ' *)",
       "Bash(python -c \"import config; import fetch_player_pbp; import player_advanced_features; import lineup_advanced_features; print\\('All modules import OK'\\)\")",
-      "PowerShell(pip install pyarrow)"
+      "PowerShell(pip install pyarrow)",
+      "Bash(pip install *)",
+      "Bash(/opt/homebrew/bin/python3.11 -m pip install joblib scikit-learn pandas numpy rich nba-api)",
+      "Bash(/opt/homebrew/bin/python3.11 /Users/rianchadha/nba_ML/predict_mac.py)",
+      "Bash(/opt/homebrew/bin/python3.11 -m pip install xgboost)",
+      "Bash(brew install *)",
+      "Bash(timeout 10 /opt/homebrew/bin/python3.11 predict_mac.py)",
+      "Bash(python3 -c \"import joblib; b = joblib.load\\('/Users/rianchadha/nba_ML/nba_mac_export.pkl'\\); print\\('Keys:', list\\(b.keys\\(\\)\\)\\); fd = b['featured_df']; print\\('Teams:', sorted\\(fd['TEAM_ABBREVIATION'].unique\\(\\).tolist\\(\\)\\)\\)\")",
+      "Bash(python3 -c \"import flask; print\\('flask', flask.__version__\\)\")",
+      "Bash(python3 app.py)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(curl -s http://localhost:5001/api/teams)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(f'Teams loaded: {len\\(d\\)}, first: {d[0]}'\\)\")"
     ]
   }
 }

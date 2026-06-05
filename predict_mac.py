@@ -274,7 +274,7 @@ def _print_result(home, away, hp, ap, playoffs):
 
 # ── Prediction functions ───────────────────────────────────────────────────────
 
-def predict_game(home, away, featured_df, model, features, medians, playoffs=False):
+def predict_game(home, away, featured_df, model, features, medians, playoffs=False, adv_params=None):
     home, away = home.upper(), away.upper()
     anchor = ['PTS_roll10', 'WINRATE_roll10']
 
@@ -305,6 +305,57 @@ def predict_game(home, away, featured_df, model, features, medians, playoffs=Fal
         src = h if '_home' in col else a
         rec[col] = src.get(base, np.nan)
 
+    if adv_params:
+        # Rest & Travel
+        if 'rest_days_home' in adv_params and 'REST_DAYS_home' in rec:
+            rec['REST_DAYS_home'] = adv_params['rest_days_home']
+        if 'rest_days_away' in adv_params and 'REST_DAYS_away' in rec:
+            rec['REST_DAYS_away'] = adv_params['rest_days_away']
+        if 'travel_km_away' in adv_params and 'TRAVEL_KM_away' in rec:
+            rec['TRAVEL_KM_away'] = adv_params['travel_km_away']
+        if 'tz_change_away' in adv_params and 'TZ_CHANGE_away' in rec:
+            rec['TZ_CHANGE_away'] = adv_params['tz_change_away']
+
+        # Back-to-Back & Streaks
+        if 'is_back_to_back_home' in adv_params and 'IS_BACK_TO_BACK_home' in rec:
+            rec['IS_BACK_TO_BACK_home'] = adv_params['is_back_to_back_home']
+        if 'is_back_to_back_away' in adv_params and 'IS_BACK_TO_BACK_away' in rec:
+            rec['IS_BACK_TO_BACK_away'] = adv_params['is_back_to_back_away']
+        if 'win_streak_home' in adv_params and 'WIN_STREAK_home' in rec:
+            rec['WIN_STREAK_home'] = adv_params['win_streak_home']
+        if 'win_streak_away' in adv_params and 'WIN_STREAK_away' in rec:
+            rec['WIN_STREAK_away'] = adv_params['win_streak_away']
+
+        # Venue & Environmental
+        if 'is_altitude_home' in adv_params and 'IS_ALTITUDE_home' in rec:
+            rec['IS_ALTITUDE_home'] = adv_params['is_altitude_home']
+
+        # Head-to-Head & Season Context
+        if 'h2h_home_win' in adv_params and 'H2H_HOME_WIN' in rec:
+            rec['H2H_HOME_WIN'] = adv_params['h2h_home_win']
+        if 'h2h_meetings' in adv_params and 'H2H_MEETINGS_THIS_SEASON' in rec:
+            rec['H2H_MEETINGS_THIS_SEASON'] = adv_params['h2h_meetings']
+        if 'month' in adv_params and 'MONTH' in rec:
+            rec['MONTH'] = adv_params['month']
+        if 'day_of_week' in adv_params and 'DAY_OF_WEEK' in rec:
+            rec['DAY_OF_WEEK'] = adv_params['day_of_week']
+        if 'is_weekend' in adv_params and 'IS_WEEKEND' in rec:
+            rec['IS_WEEKEND'] = adv_params['is_weekend']
+
+        # Playoff-Specific
+        if 'playoff_round' in adv_params and 'PLAYOFF_ROUND' in rec:
+            rec['PLAYOFF_ROUND'] = adv_params['playoff_round']
+        if 'series_game_num' in adv_params and 'SERIES_GAME_NUM' in rec:
+            rec['SERIES_GAME_NUM'] = adv_params['series_game_num']
+        if 'is_must_win' in adv_params and 'IS_MUST_WIN' in rec:
+            rec['IS_MUST_WIN'] = adv_params['is_must_win']
+
+        # Performance Trends
+        if 'pts_trend_home' in adv_params and 'PTS_TREND_home' in rec:
+            rec['PTS_TREND_home'] = adv_params['pts_trend_home']
+        if 'pts_trend_away' in adv_params and 'PTS_TREND_away' in rec:
+            rec['PTS_TREND_away'] = adv_params['pts_trend_away']
+
     X = pd.DataFrame([rec])[features].apply(pd.to_numeric, errors='coerce').fillna(medians)
     p = model.predict_proba(X)[0]
     _print_result(home, away, p[1], p[0], playoffs)
@@ -313,7 +364,7 @@ def predict_game(home, away, featured_df, model, features, medians, playoffs=Fal
 
 def predict_with_lineups(home, home_names, away, away_names,
                          player_rolling, model, features, medians,
-                         all_players, playoffs=False):
+                         all_players, playoffs=False, adv_params=None):
     home, away = home.upper(), away.upper()
 
     h_rows = resolve_lineup(home_names, f'{home} (home)', all_players, player_rolling)
@@ -349,6 +400,57 @@ def predict_with_lineups(home, home_names, away, away_names,
             rec[col] = h_lu.get(col.replace('_home', ''), np.nan)
         elif '_away' in col:
             rec[col] = a_lu.get(col.replace('_away', ''), np.nan)
+
+    if adv_params:
+        # Rest & Travel
+        if 'rest_days_home' in adv_params and 'REST_DAYS_home' in rec:
+            rec['REST_DAYS_home'] = adv_params['rest_days_home']
+        if 'rest_days_away' in adv_params and 'REST_DAYS_away' in rec:
+            rec['REST_DAYS_away'] = adv_params['rest_days_away']
+        if 'travel_km_away' in adv_params and 'TRAVEL_KM_away' in rec:
+            rec['TRAVEL_KM_away'] = adv_params['travel_km_away']
+        if 'tz_change_away' in adv_params and 'TZ_CHANGE_away' in rec:
+            rec['TZ_CHANGE_away'] = adv_params['tz_change_away']
+
+        # Back-to-Back & Streaks
+        if 'is_back_to_back_home' in adv_params and 'IS_BACK_TO_BACK_home' in rec:
+            rec['IS_BACK_TO_BACK_home'] = adv_params['is_back_to_back_home']
+        if 'is_back_to_back_away' in adv_params and 'IS_BACK_TO_BACK_away' in rec:
+            rec['IS_BACK_TO_BACK_away'] = adv_params['is_back_to_back_away']
+        if 'win_streak_home' in adv_params and 'WIN_STREAK_home' in rec:
+            rec['WIN_STREAK_home'] = adv_params['win_streak_home']
+        if 'win_streak_away' in adv_params and 'WIN_STREAK_away' in rec:
+            rec['WIN_STREAK_away'] = adv_params['win_streak_away']
+
+        # Venue & Environmental
+        if 'is_altitude_home' in adv_params and 'IS_ALTITUDE_home' in rec:
+            rec['IS_ALTITUDE_home'] = adv_params['is_altitude_home']
+
+        # Head-to-Head & Season Context
+        if 'h2h_home_win' in adv_params and 'H2H_HOME_WIN' in rec:
+            rec['H2H_HOME_WIN'] = adv_params['h2h_home_win']
+        if 'h2h_meetings' in adv_params and 'H2H_MEETINGS_THIS_SEASON' in rec:
+            rec['H2H_MEETINGS_THIS_SEASON'] = adv_params['h2h_meetings']
+        if 'month' in adv_params and 'MONTH' in rec:
+            rec['MONTH'] = adv_params['month']
+        if 'day_of_week' in adv_params and 'DAY_OF_WEEK' in rec:
+            rec['DAY_OF_WEEK'] = adv_params['day_of_week']
+        if 'is_weekend' in adv_params and 'IS_WEEKEND' in rec:
+            rec['IS_WEEKEND'] = adv_params['is_weekend']
+
+        # Playoff-Specific
+        if 'playoff_round' in adv_params and 'PLAYOFF_ROUND' in rec:
+            rec['PLAYOFF_ROUND'] = adv_params['playoff_round']
+        if 'series_game_num' in adv_params and 'SERIES_GAME_NUM' in rec:
+            rec['SERIES_GAME_NUM'] = adv_params['series_game_num']
+        if 'is_must_win' in adv_params and 'IS_MUST_WIN' in rec:
+            rec['IS_MUST_WIN'] = adv_params['is_must_win']
+
+        # Performance Trends
+        if 'pts_trend_home' in adv_params and 'PTS_TREND_home' in rec:
+            rec['PTS_TREND_home'] = adv_params['pts_trend_home']
+        if 'pts_trend_away' in adv_params and 'PTS_TREND_away' in rec:
+            rec['PTS_TREND_away'] = adv_params['pts_trend_away']
 
     X = (pd.DataFrame([rec])
          .reindex(columns=features)
@@ -430,27 +532,192 @@ def main():
     predict_game('BOS', 'MIA', featured_df, model, features, medians)
     predict_game('OKC', 'DEN', featured_df, model, features, medians)
 
+    # ── Advanced parameters helper ───────────────────────────────────────────
+    def get_advanced_params():
+        """Get optional advanced parameters from user."""
+        params = {}
+        console.print("\n[cyan]Optional Advanced Parameters (press Enter to skip):")
+
+        # ── Rest & Travel ──
+        console.print("\n  [yellow]Rest & Travel:")
+        rest = Prompt.ask("    Rest days home team (default 3)", default="").strip()
+        if rest:
+            try:
+                params['rest_days_home'] = int(rest)
+            except ValueError:
+                console.print("    [yellow]Invalid, skipping")
+
+        rest_away = Prompt.ask("    Rest days away team (default 3)", default="").strip()
+        if rest_away:
+            try:
+                params['rest_days_away'] = int(rest_away)
+            except ValueError:
+                console.print("    [yellow]Invalid, skipping")
+
+        travel = Prompt.ask("    Travel km away team (default 500)", default="").strip()
+        if travel:
+            try:
+                params['travel_km_away'] = int(travel)
+            except ValueError:
+                console.print("    [yellow]Invalid, skipping")
+
+        tz = Prompt.ask("    Timezone change away team in hours (default 0)", default="").strip()
+        if tz:
+            try:
+                params['tz_change_away'] = int(tz)
+            except ValueError:
+                console.print("    [yellow]Invalid, skipping")
+
+        # ── Back-to-Back & Momentum ──
+        console.print("\n  [yellow]Back-to-Back & Momentum:")
+        btb_home = Prompt.ask("    Home team back-to-back? (y/n)", default="").strip()
+        if btb_home.lower() in ['y', 'n']:
+            params['is_back_to_back_home'] = 1 if btb_home.lower() == 'y' else 0
+
+        btb_away = Prompt.ask("    Away team back-to-back? (y/n)", default="").strip()
+        if btb_away.lower() in ['y', 'n']:
+            params['is_back_to_back_away'] = 1 if btb_away.lower() == 'y' else 0
+
+        win_streak_home = Prompt.ask("    Home team win streak (e.g., -2 for loss streak)", default="").strip()
+        if win_streak_home:
+            try:
+                params['win_streak_home'] = int(win_streak_home)
+            except ValueError:
+                console.print("    [yellow]Invalid, skipping")
+
+        win_streak_away = Prompt.ask("    Away team win streak (e.g., 3 for 3-game win streak)", default="").strip()
+        if win_streak_away:
+            try:
+                params['win_streak_away'] = int(win_streak_away)
+            except ValueError:
+                console.print("    [yellow]Invalid, skipping")
+
+        # ── Venue & Environmental ──
+        console.print("\n  [yellow]Venue & Environmental:")
+        altitude = Prompt.ask("    High altitude? (y/n) [Denver, etc.]", default="").strip()
+        if altitude.lower() in ['y', 'n']:
+            params['is_altitude_home'] = 1 if altitude.lower() == 'y' else 0
+
+        # ── Head-to-Head & Series ──
+        console.print("\n  [yellow]Head-to-Head & Season Context:")
+        h2h = Prompt.ask("    Home team H2H win rate (0.0-1.0, e.g., 0.6 for 60%)", default="").strip()
+        if h2h:
+            try:
+                h2h_val = float(h2h)
+                if 0 <= h2h_val <= 1:
+                    params['h2h_home_win'] = h2h_val
+                else:
+                    console.print("    [yellow]Must be 0-1, skipping")
+            except ValueError:
+                console.print("    [yellow]Invalid, skipping")
+
+        h2h_meetings = Prompt.ask("    H2H meetings this season (default 0)", default="").strip()
+        if h2h_meetings:
+            try:
+                params['h2h_meetings'] = int(h2h_meetings)
+            except ValueError:
+                console.print("    [yellow]Invalid, skipping")
+
+        month = Prompt.ask("    Month (1-12, default 3 for March)", default="").strip()
+        if month:
+            try:
+                m = int(month)
+                if 1 <= m <= 12:
+                    params['month'] = m
+                else:
+                    console.print("    [yellow]Must be 1-12, skipping")
+            except ValueError:
+                console.print("    [yellow]Invalid, skipping")
+
+        day_of_week = Prompt.ask("    Day of week (0=Mon, 1=Tue... 6=Sun, default 2)", default="").strip()
+        if day_of_week:
+            try:
+                d = int(day_of_week)
+                if 0 <= d <= 6:
+                    params['day_of_week'] = d
+                else:
+                    console.print("    [yellow]Must be 0-6, skipping")
+            except ValueError:
+                console.print("    [yellow]Invalid, skipping")
+
+        is_weekend = Prompt.ask("    Is weekend game? (y/n)", default="").strip()
+        if is_weekend.lower() in ['y', 'n']:
+            params['is_weekend'] = 1 if is_weekend.lower() == 'y' else 0
+
+        # ── Playoff-Specific ──
+        console.print("\n  [yellow]Playoff-Specific (if in playoffs):")
+        playoff_round = Prompt.ask("    Playoff round (1=first round, 4=Finals, default 1)", default="").strip()
+        if playoff_round:
+            try:
+                pr = int(playoff_round)
+                if 1 <= pr <= 4:
+                    params['playoff_round'] = pr
+                else:
+                    console.print("    [yellow]Must be 1-4, skipping")
+            except ValueError:
+                console.print("    [yellow]Invalid, skipping")
+
+        series_game = Prompt.ask("    Series game number (1-7, e.g., 5 for Game 5)", default="").strip()
+        if series_game:
+            try:
+                sg = int(series_game)
+                if 1 <= sg <= 7:
+                    params['series_game_num'] = sg
+                else:
+                    console.print("    [yellow]Must be 1-7, skipping")
+            except ValueError:
+                console.print("    [yellow]Invalid, skipping")
+
+        is_must_win = Prompt.ask("    Must-win game? (y/n)", default="").strip()
+        if is_must_win.lower() in ['y', 'n']:
+            params['is_must_win'] = 1 if is_must_win.lower() == 'y' else 0
+
+        # ── Team Performance Trends ──
+        console.print("\n  [yellow]Performance Trends (optional adjustments):")
+        pts_trend_home = Prompt.ask("    Home team pts trend (-10 to 10, recent scoring change)", default="").strip()
+        if pts_trend_home:
+            try:
+                params['pts_trend_home'] = int(pts_trend_home)
+            except ValueError:
+                console.print("    [yellow]Invalid, skipping")
+
+        pts_trend_away = Prompt.ask("    Away team pts trend (-10 to 10)", default="").strip()
+        if pts_trend_away:
+            try:
+                params['pts_trend_away'] = int(pts_trend_away)
+            except ValueError:
+                console.print("    [yellow]Invalid, skipping")
+
+        return params
+
     # ── Interactive loop ──────────────────────────────────────────────────────
     console.print(Panel(
-        "[cyan]1. Team mode\n2. Lineup mode",
+        "[cyan]1. Team mode (quick)\n2. Lineup mode (quick)\n3. Team mode (advanced)\n4. Lineup mode (advanced)",
         title="[bold cyan]Interactive", border_style="cyan", padding=(1, 2),
     ))
     while True:
         try:
-            choice = Prompt.ask("\n[bold cyan]Choose (1/2, Ctrl+C to exit)", choices=['1', '2'])
+            choice = Prompt.ask("\n[bold cyan]Choose (1/2/3/4, Ctrl+C to exit)", choices=['1', '2', '3', '4'])
             playoffs = Prompt.ask("  Playoffs? (y/n)", choices=['y', 'n']) == 'y'
-            if choice == '1':
+            adv_params = {}
+
+            if choice in ['1', '3']:
                 h = Prompt.ask("  Home team").strip()
                 a = Prompt.ask("  Away team").strip()
-                predict_game(h, a, featured_df, model, features, medians, playoffs=playoffs)
+                if choice == '3':
+                    adv_params = get_advanced_params()
+                predict_game(h, a, featured_df, model, features, medians,
+                           playoffs=playoffs, adv_params=adv_params)
             else:
                 h = Prompt.ask("  Home team").strip().upper()
                 hn = [Prompt.ask(f"    {h} player {i}").strip() for i in range(1, 6)]
                 a = Prompt.ask("  Away team").strip().upper()
                 an = [Prompt.ask(f"    {a} player {i}").strip() for i in range(1, 6)]
+                if choice == '4':
+                    adv_params = get_advanced_params()
                 predict_with_lineups(h, hn, a, an, player_rolling,
                                      model, features, medians, all_players,
-                                     playoffs=playoffs)
+                                     playoffs=playoffs, adv_params=adv_params)
         except KeyboardInterrupt:
             console.print("\n[cyan]Done.")
             break
